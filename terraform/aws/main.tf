@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_instance" "jenkins" {
-    ami = "ami-uvvuvnnvnfv"
+    ami = "ami-020cba7c55df1f615"
     instance_type="t2.micro"
     key_name =var.key_name
 
@@ -14,7 +14,7 @@ tags={
 provisioner "remote-exec" {
     inline =[
         "sudo apt update",
-        sudo apt install -y docker.io",
+        "sudo apt install -y docker.io",
         "sudo usermodm -aG docker ubuntu"
     ]
     connection {
