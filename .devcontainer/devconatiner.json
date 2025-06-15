@@ -1,0 +1,9 @@
+{ "name" : "DevSecOps Enviorment" , 
+"image": "mcr.microsoft.com/devcontainers/python:3.12",
+"features":{
+    "ghcr.io/devcontainers/features/terraform:1":{},
+    "ghcr.io/devcontainers/features/docker-in-docker:1":{},
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube/features/kubectl-helm-minikuve: 1": {},
+    "ghcr.io/devcontainers/features/node:1":{}
+},
+"postCreateCommand":"pip install -r requirements.txt"}
