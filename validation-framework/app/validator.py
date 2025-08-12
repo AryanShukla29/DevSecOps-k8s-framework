@@ -1,28 +1,31 @@
 import yaml
- 
+
+def load_manifests(file_path):
+    with open(file_path) as f:
+        return list(yaml.safe_load_all(f))
+
+def is_deployment(manifest):
+    return manifest.get("kind") == "Deployment"
+
+def validate_container(container, doc_index):
+    name = container.get("name", "<unnamed>")
+    security_context = container.get("securityContext", {})
+    if security_context.get("runAsNonRoot") is True:
+        print(f"✅ Container '{name}' in Document {doc_index} has runAsNonRoot enabled.")
+    else:
+        print(f"❌ Container '{name}' in Document {doc_index} does NOT have runAsNonRoot enabled.")
+
 def validate_manifest(manifest_file):
-    with open(manifest_file) as f:
-        docs = yaml.safe_load_all(f)
-        for i, manifest in enumerate(docs):
-            kind = manifest.get("kind")
-            if kind != "Deployment":
-                print(f"❌ Document {i+1}: Not a Deployment (found: {kind})")
-                continue
- 
-            spec = manifest.get("spec", {})
-            template = spec.get("template", {})
-            pod_spec = template.get("spec", {})
-            containers = pod_spec.get("containers", [])
- 
-            if not containers:
-                print(f"⚠️ Document {i+1}: No containers found in Deployment spec.")
-                continue
- 
-            for container in containers:
-                name = container.get("name", "<unnamed>")
-                security_context = container.get("securityContext", {})
-                if security_context.get("runAsNonRoot") is True:
-                    print(f"✅ Container '{name}' in Document {i+1} has runAsNonRoot enabled.")
-                else:
-                    print(f"❌ Container '{name}'in Document {i+1} does NOT have runAsNonRoot enabled.")
- 
+    manifests = load_manifests(manifest_file)
+    for i, manifest in enumerate(manifests, 1):
+        if not is_deployment(manifest):
+            print(f"❌ Document {i}: Not a Deployment (found: {manifest.get('kind')})")
+            continue
+
+        containers = manifest.get("spec", {}).get("template", {}).get("spec", {}).get("containers", [])
+        if not containers:
+            print(f"⚠️ Document {i}: No containers found in Deployment spec.")
+            continue
+
+        for container in containers:
+            validate_container(container, i)

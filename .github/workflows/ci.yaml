@@ -2,23 +2,65 @@ name: CI Pipeline
 
 on:
   push:
-   branches: [main]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKER_IMAGE: your-dockerhub-username/devsecops-validator
 
 jobs:
- build:
-   runs-on: ubuntu-latest
-   steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+  build:
+    runs-on: ubuntu-latest
 
-    - name: Run Python Lint
-      run: pip install pylint && pylint validate_manifest.py
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Trivy Scan
-      uses: aquasecurity/trivy-action@master
-      with:
-       scan-type: "fs"
-       severity: 'HIGH'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
 
-    - name: Kubernetes Manifest Validation
-      run: python3 validate_manifest.pyk8s/deployment.yaml
+      - name: Install Dependencies
+        run: |
+          pip install --no-cache-dir -r validation-framework/requirements.txt
+
+      - name: Run Kubernetes Manifest Validator
+        run: |
+          python validation-framework/app/main.py --manifest k8s/deployment.yaml
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
+        run: |
+          docker build -t $DOCKER_IMAGE:${{ github.run_number }} -f Dockerfile .
+
+      - name: Push Docker Image
+        run: |
+          docker push $DOCKER_IMAGE:${{ github.run_number }}
+
+      - name: Update Helm values.yaml
+        run: |
+          sed -i "s/tag: .*/tag: ${{ github.run_number }}/" helm/myapp/values.yaml
+
+      - name: Commit and Push Updated values.yaml
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add helm/myapp/values.yaml
+          git commit -m "Update image tag to ${{ github.run_number }}"
+          git push
+
+      - name: Trigger ArgoCD Sync
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_USERNAME: ${{ secrets.ARGOCD_USERNAME }}
+          ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
+        run: |
+          argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD --insecure
+          argocd app sync devsecops-validator

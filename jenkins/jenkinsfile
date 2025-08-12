@@ -2,15 +2,12 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "aryan25/devsecops-fitness-app"
+        DOCKER_IMAGE = "your-dockerhub-username/devsecops-validator"
         IMAGE_TAG = "${BUILD_NUMBER}"
         SONAR_PROJECT_KEY = "fitness-app"
         SONAR_HOST_URL = "http://<your-sonarqube-url>:9000"
         SONAR_TOKEN = credentials('sonar-token')
         DOCKER_HUB_CREDENTIALS = credentials('docker-hub')
-        ARGOCD_SERVER = "<your-argocd-server>"
-        ARGOCD_USER = "admin"
-        ARGOCD_PASSWORD = credentials('argocd-pass')
     }
 
     stages {
@@ -23,20 +20,20 @@ pipeline {
         stage('SonarQube Scan') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-                          -Dsonar.sources=. \
-                          -Dsonar.host.url=$SONAR_HOST_URL \
-                          -Dsonar.login=$SONAR_TOKEN
-                    '''
+                    sh 'sonar-scanner -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.sources=. -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN'
                 }
+            }
+        }
+
+        stage('K8s Manifest Validation') {
+            steps {
+                sh './jenkins/scripts/k8s-validate.sh'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t $DOCKER_IMAGE:$IMAGE_TAG ."
+                sh './jenkins/scripts/docker-build.sh'
             }
         }
 
@@ -62,16 +59,22 @@ pipeline {
             }
         }
 
-        stage('Kubernetes Deployment Validation') {
+        stage('Update Helm Values') {
             steps {
-                sh "python3 validate_manifest.py k8s/deployment.yaml"
+                script {
+                    sh """
+                    echo '📦 Updating Helm values.yaml with new image tag...'
+                    sed -i 's/tag: .*/tag: ${BUILD_NUMBER}/' helm/myapp/values.yaml
+                    cat helm/myapp/values.yaml | grep 'tag:'
+                    """
+                }
             }
         }
 
         stage('Deploy to Kubernetes via ArgoCD') {
             steps {
                 sh '''
-                    argocd login $ARGOCD_SERVER --username $ARGOCD_USER --password $ARGOCD_PASSWORD --insecure
+                    argocd login <ARGOCD_SERVER> --username admin --password <ARGOCD_PASSWORD> --insecure
                     argocd app sync fitness-app
                 '''
             }

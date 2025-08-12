@@ -1,8 +1,19 @@
 import argparse
-from validator import   validate_manifest
+from validator import validate_manifest
 
-if __name__=="__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--manifest',required=True)
+def main():
+    parser = argparse.ArgumentParser(
+        description="Kubernetes Deployment Manifest Validator"
+    )
+    parser.add_argument(
+        '--manifest',
+        required=True,
+        help='Path to the Kubernetes manifest YAML file'
+    )
     args = parser.parse_args()
+
+    # Run validation
     validate_manifest(args.manifest)
+
+if __name__ == "__main__":
+    main()

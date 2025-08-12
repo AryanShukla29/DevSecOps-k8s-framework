@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devsecops-validator
+  namespace: argocd
+spec:
+  project: devsecops-project
+  source:
+    repoURL: 'https://github.com/AryanShukla29/DevSecOps-k8s-framework.git'
+    targetRevision: main
+    path: helm/myapp
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
