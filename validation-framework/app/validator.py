@@ -1,31 +1,68 @@
 import yaml
-
-def load_manifests(file_path):
-    with open(file_path) as f:
-        return list(yaml.safe_load_all(f))
-
-def is_deployment(manifest):
-    return manifest.get("kind") == "Deployment"
-
-def validate_container(container, doc_index):
-    name = container.get("name", "<unnamed>")
-    security_context = container.get("securityContext", {})
-    if security_context.get("runAsNonRoot") is True:
-        print(f"✅ Container '{name}' in Document {doc_index} has runAsNonRoot enabled.")
-    else:
-        print(f"❌ Container '{name}' in Document {doc_index} does NOT have runAsNonRoot enabled.")
-
+import json
+ 
 def validate_manifest(manifest_file):
-    manifests = load_manifests(manifest_file)
-    for i, manifest in enumerate(manifests, 1):
-        if not is_deployment(manifest):
-            print(f"❌ Document {i}: Not a Deployment (found: {manifest.get('kind')})")
-            continue
-
-        containers = manifest.get("spec", {}).get("template", {}).get("spec", {}).get("containers", [])
-        if not containers:
-            print(f"⚠️ Document {i}: No containers found in Deployment spec.")
-            continue
-
-        for container in containers:
-            validate_container(container, i)
+    results = []
+    with open(manifest_file) as f:
+        docs = yaml.safe_load_all(f)
+        for i, manifest in enumerate(docs):
+            kind = manifest.get("kind")
+            if kind != "Deployment":
+                results.append({
+                    "doc": i+1,
+                    "status": "fail",
+                    "reason": f"Not a Deployment (found: {kind})"
+                })
+                continue
+ 
+            containers = manifest.get("spec", {}) \
+                                 .get("template", {}) \
+                                 .get("spec", {}) \
+                                 .get("containers", [])
+ 
+            if not containers:
+                results.append({
+                    "doc": i+1,
+                    "status": "fail",
+                    "reason": "No containers in Deployment"
+                })
+                continue
+ 
+            for container in containers:
+                name = container.get("name", "<unnamed>")
+                security_context = container.get("securityContext", {})
+                resources = container.get("resources", {})
+                probes = {
+                    "livenessProbe": container.get("livenessProbe"),
+                    "readinessProbe": container.get("readinessProbe")
+                }
+ 
+                # Checks
+                if not security_context.get("runAsNonRoot"):
+                    results.append({
+                        "doc": i+1, "container": name,
+                        "status": "fail",
+                        "reason": "runAsNonRoot missing"
+                    })
+                if "limits" not in resources:
+                    results.append({
+                        "doc": i+1, "container": name,
+                        "status": "fail",
+                        "reason": "Resource limits not set"
+                    })
+                if not all(probes.values()):
+                    results.append({
+                        "doc": i+1, "container": name,
+                        "status": "fail",
+                        "reason": "Liveness/Readiness probe missing"
+                    })
+ 
+                if all(r["status"] == "pass" for r in results):
+                    results.append({
+                        "doc": i+1, "container": name,
+                        "status": "pass"
+                    })
+ 
+    print(json.dumps(results, indent=2))
+    return results
+ 
