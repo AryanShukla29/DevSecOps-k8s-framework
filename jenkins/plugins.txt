@@ -1,0 +1,7 @@
+git:latest
+workflow-aggregator:latest
+docker-workflow:latest
+sonar:latest
+trivy:latest
+blueocean:latest
+configurations-as-code:latest
