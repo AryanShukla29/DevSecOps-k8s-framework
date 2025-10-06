@@ -4,4 +4,4 @@ docker-workflow:latest
 sonar:latest
 trivy:latest
 blueocean:latest
-configurations-as-code:latest
+configuration-as-code:1.55

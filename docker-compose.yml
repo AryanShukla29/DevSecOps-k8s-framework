@@ -1,52 +1,60 @@
-version: "3.8"
+version: "3.9"
  
 services:
   jenkins:
-    build:
-      context: .
-      dockerfile: docker/Jenkins.Dockerfile
+    image: jenkins/jenkins:lts
     container_name: jenkins
-    restart: always
     ports:
       - "8080:8080"
       - "50000:50000"
-    environment:
-      DOCKER_USER: ${DOCKER_USER}
-      DOCKER_PASS: ${DOCKER_PASS}
-      SONAR_TOKEN: ${SONAR_TOKEN}
     volumes:
       - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
  
   sonarqube:
-    image: sonarqube:lts-community
+    image: sonarqube:10.5-community
     container_name: sonarqube
-    restart: always
-    environment:
-      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
     ports:
       - "9000:9000"
-    depends_on:
-      - db
- 
-  db:
-    image: postgres:13
-    container_name: postgres
-    restart: always
     environment:
-      POSTGRES_USER: sonar
-      POSTGRES_PASSWORD: sonar
-      POSTGRES_DB: sonarqube
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    restart: unless-stopped
  
-  argocd:
-    image: argoproj/argocd
-    container_name: argocd
-    restart: always
+  argocd-server:
+    image: argoproj/argocd:v2.10.7
+    container_name: argocd-server
     ports:
       - "8081:8080"
+    command: ["argocd-server", "--insecure"]
+    volumes:
+      - argocd-data:/var/lib/argocd
+    depends_on:
+      - repo-server
+    restart: unless-stopped
+ 
+  repo-server:
+    image: argoproj/argocd-repo-server:v2.10.7
+    container_name: argocd-repo-server
+    volumes:
+      - argocd-data:/var/lib/argocd
+    restart: unless-stopped
+ 
+  trivy:
+    image: aquasec/trivy:latest
+    container_name: trivy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./trivy-cache:/root/.cache/
+    entrypoint: tail -f /dev/null # Keep container running
+    restart: unless-stopped
  
 volumes:
   jenkins_home:
-  postgres_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  argocd-data:

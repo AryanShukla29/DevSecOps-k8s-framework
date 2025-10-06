@@ -1,83 +1,81 @@
 pipeline {
     agent any
-
+ 
     environment {
-        DOCKER_IMAGE = "your-dockerhub-username/devsecops-validator"
-        IMAGE_TAG = "${BUILD_NUMBER}"
-        SONAR_PROJECT_KEY = "fitness-app"
-        SONAR_HOST_URL = "http://<your-sonarqube-url>:9000"
-        SONAR_TOKEN = credentials('sonar-token')
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub')
+        DOCKER_IMAGE = "your-dockerhub-username/devsecops-validator:latest"
+        DOCKER_CREDENTIALS = credentials('dockerhub-credentials')  // create in Jenkins
+        SONAR_TOKEN = credentials('sonarqube-token')              // create in Jenkins
+        KUBECONFIG_CRED = credentials('kubeconfig-file')          // create in Jenkins
     }
-
+ 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                checkout scm
+                git branch: 'main', url: 'https://github.com/AryanShukla29/DevSecOps-k8s-framework.git'
             }
         }
-
-        stage('SonarQube Scan') {
+ 
+        stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh 'sonar-scanner -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.sources=. -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN'
-                }
-            }
-        }
-
-        stage('K8s Manifest Validation') {
-            steps {
-                sh './jenkins/scripts/k8s-validate.sh'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh './jenkins/scripts/docker-build.sh'
-            }
-        }
-
-        stage('Trivy Vulnerability Scan') {
-            steps {
-                sh '''
-                    trivy image --exit-code 1 --severity CRITICAL,HIGH $DOCKER_IMAGE:$IMAGE_TAG || {
-                        echo "Vulnerabilities found!";
-                        exit 1;
-                    }
-                '''
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh '''
-                        echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin
-                        docker push $DOCKER_IMAGE:$IMAGE_TAG
-                    '''
-                }
-            }
-        }
-
-        stage('Update Helm Values') {
-            steps {
-                script {
                     sh """
-                    echo '📦 Updating Helm values.yaml with new image tag...'
-                    sed -i 's/tag: .*/tag: ${BUILD_NUMBER}/' helm/myapp/values.yaml
-                    cat helm/myapp/values.yaml | grep 'tag:'
+                        sonar-scanner \
+                          -Dsonar.projectKey=devsecops-k8s-framework \
+                          -Dsonar.sources=. \
+                          -Dsonar.host.url=http://sonarqube:9000 \
+                          -Dsonar.login=$SONAR_TOKEN
                     """
                 }
             }
         }
-
-        stage('Deploy to Kubernetes via ArgoCD') {
+ 
+        stage('Docker Build') {
             steps {
-                sh '''
-                    argocd login <ARGOCD_SERVER> --username admin --password <ARGOCD_PASSWORD> --insecure
-                    argocd app sync fitness-app
-                '''
+                sh """
+                    docker build -t $DOCKER_IMAGE .
+                """
+            }
+        }
+ 
+        stage('Trivy Scan') {
+            steps {
+                sh """
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+                        aquasec/trivy:latest image $DOCKER_IMAGE
+                """
+            }
+        }
+ 
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push $DOCKER_IMAGE
+                    """
+                }
+            }
+        }
+ 
+        stage('Deploy with ArgoCD') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG')]) {
+                    sh """
+                        export KUBECONFIG=$KUBECONFIG
+                        kubectl apply -f k8s/deployment.yaml
+                        kubectl apply -f k8s/service.yaml
+                        kubectl apply -f k8s/configmap.yaml
+                    """
+                }
             }
         }
     }
+ 
+    post {
+        always {
+            cleanWs()
+        }
+    }
 }
+
+ 
