@@ -1,19 +1,19 @@
 output "jenkins_public_ip" {
   value = aws_instance.jenkins.public_ip
 }
- 
+
 output "jenkins_url" {
   value = "http://${aws_instance.jenkins.public_ip}:8080"
 }
- 
+
 output "sonarqube_url" {
   value = "http://${aws_instance.jenkins.public_ip}:9000"
 }
- 
+
 output "argocd_url" {
   value = "http://${aws_instance.jenkins.public_ip}:8081"
 }
- 
+
 # Helpful instructions for first login
 output "credentials_info" {
   value = <<EOT

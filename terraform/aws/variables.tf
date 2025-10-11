@@ -40,3 +40,8 @@ variable "subnet_id" {
   description = "Subnet ID for the instance"
   type        = string
 }
+
+variable "my_ip" {
+  description = "Local IP address for ssh and Jenkins access"
+  type        = string
+}

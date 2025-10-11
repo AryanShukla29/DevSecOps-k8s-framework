@@ -25,7 +25,7 @@ services:
     restart: unless-stopped
  
   argocd-server:
-    image: argoproj/argocd:v2.10.7
+    image: argoproj/argocd:latest
     container_name: argocd-server
     ports:
       - "8081:8080"

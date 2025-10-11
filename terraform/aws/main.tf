@@ -2,21 +2,21 @@ provider "aws" {
   region  = var.aws_region
   profile = "default"
 }
- 
+
 # Security group for Jenkins, SonarQube, ArgoCD
 resource "aws_security_group" "jenkins_sg" {
   name        = "jenkins-sg"
   description = "Allow SSH, Jenkins, SonarQube, and ArgoCD"
   vpc_id      = var.vpc_id
- 
+
   ingress {
     description = "SSH Access"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Restrict SSH to your IP
+    cidr_blocks = ["0.0.0.0/0"] # Restrict SSH to your IP
   }
- 
+
   ingress {
     description = "Jenkins UI"
     from_port   = 8080
@@ -24,7 +24,7 @@ resource "aws_security_group" "jenkins_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
+
   ingress {
     description = "SonarQube UI"
     from_port   = 9000
@@ -32,7 +32,7 @@ resource "aws_security_group" "jenkins_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
+
   ingress {
     description = "ArgoCD UI"
     from_port   = 8081
@@ -40,7 +40,7 @@ resource "aws_security_group" "jenkins_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
+
   egress {
     description = "Allow All Outbound"
     from_port   = 0
@@ -48,12 +48,12 @@ resource "aws_security_group" "jenkins_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
- 
+
   tags = {
     Name = "jenkins-sg"
   }
 }
- 
+
 # EC2 Instance for Jenkins + DevSecOps stack
 resource "aws_instance" "jenkins" {
   ami                         = var.ami_id
@@ -62,7 +62,7 @@ resource "aws_instance" "jenkins" {
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
   associate_public_ip_address = true
- 
+
   user_data = <<-EOF
     #!/bin/bash
     set -e
@@ -88,7 +88,7 @@ resource "aws_instance" "jenkins" {
     # Run docker-compose
     sudo docker-compose up -d
   EOF
- 
+
   tags = {
     Name = "jenkins-server"
   }
