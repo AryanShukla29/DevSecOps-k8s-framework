@@ -1,5 +1,3 @@
-version: "3.9"
- 
 services:
   jenkins:
     image: jenkins/jenkins:lts
@@ -9,49 +7,49 @@ services:
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
-    restart: unless-stopped
- 
+    restart: always
+
   sonarqube:
-    image: sonarqube:10.5-community
+    image: sonarqube:latest
     container_name: sonarqube
     ports:
       - "9000:9000"
-    environment:
-      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_extensions:/opt/sonarqube/extensions
       - sonarqube_logs:/opt/sonarqube/logs
-    restart: unless-stopped
- 
+    restart: always
+
   argocd-server:
-    image: argoproj/argocd:latest
+    image: argoproj/argocd:v2.6.15
     container_name: argocd-server
+    command: ["argocd-server", "--insecure"]
     ports:
       - "8081:8080"
-    command: ["argocd-server", "--insecure"]
     volumes:
-      - argocd-data:/var/lib/argocd
-    depends_on:
-      - repo-server
-    restart: unless-stopped
- 
-  repo-server:
-    image: argoproj/argocd-repo-server:v2.10.7
-    container_name: argocd-repo-server
-    volumes:
-      - argocd-data:/var/lib/argocd
-    restart: unless-stopped
- 
+      - argocd-data:/data
+    restart: always
+
   trivy:
     image: aquasec/trivy:latest
     container_name: trivy
+    entrypoint: ["tail", "-f", "/dev/null"]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./trivy-cache:/root/.cache/
-    entrypoint: tail -f /dev/null # Keep container running
     restart: unless-stopped
- 
+
+  validator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: k8s-validator
+    working_dir: /app
+    command: ["--manifest", "k8s/deployment.yaml"]
+    volumes:
+      - ./k8s:/app/k8s
+      - ./validation-framework:/app/validation-framework
+    restart: no
+
 volumes:
   jenkins_home:
   sonarqube_data:

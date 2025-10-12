@@ -1,19 +1,41 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
- name: devsecops-app
+  name: validator-demo
 spec:
- replicas: 2
- selector:
-  matchLabels:
-    app: devsecops-app
+  replicas: 1
+  selector:
+    matchLabels:
+      app: validator-demo
   template:
-   metadata:
-    matchLabels: 
-     app: devsecops-app
-  spec:
-    containers:
-     - name: devsecops-container
-       image: your-docker-username/devsecops-app:latest
-       securityContext:
-        runAsNonRoot: true
+    metadata:
+      labels:
+        app: validator-demo
+    spec:
+      containers:
+        - name: validator-demo-container
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          securityContext:
+            runAsNonRoot: true
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+ 
