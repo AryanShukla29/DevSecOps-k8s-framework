@@ -1,3 +1,5 @@
+---
+ 
 # 🚀 DevSecOps Kubernetes Deployment Validation Framework  
  
 A fully automated **DevSecOps CI/CD Framework** built using **Terraform, Jenkins, SonarQube, Trivy, ArgoCD, and a Custom Kubernetes Validation Engine** to ensure secure, scalable, and reliable cloud-native application delivery.  
@@ -41,3 +43,86 @@ It prevents insecure or misconfigured workloads from being deployed.
 ### **Command Example:**  
 ```bash
 python validation-framework/app/main.py --manifest k8s/deployment.yaml
+ 
+Sample Output:
+ 
+{
+  "doc": 1,
+  "container": "validator-demo-container",
+  "status": "success",
+  "reason": "All checks passed"
+}
+ 
+ 
+---
+ 
+⚙️ Setup & Usage
+ 
+1️⃣ Clone Repository
+ 
+git clone https://github.com/AryanShukla29/DevSecOps-k8s-framework.git
+cd DevSecOps-k8s-framework
+ 
+2️⃣ Provision Infrastructure
+ 
+cd terraform/aws
+terraform init
+terraform apply -auto-approve
+ 
+3️⃣ Launch Services
+ 
+sudo docker-compose up -d
+ 
+4️⃣ Access Points
+ 
+Service URL
+ 
+Jenkins http://<EC2_PUBLIC_IP>:8080
+SonarQube http://<EC2_PUBLIC_IP>:9000
+ArgoCD http://<EC2_PUBLIC_IP>:8081
+ 
+ 
+ 
+---
+ 
+🛡️ Features
+ 
+🚀 Automated Infrastructure Provisioning (Terraform)
+ 
+🔄 End-to-End CI/CD Pipeline (Jenkins + Docker)
+ 
+🧩 Static Code Analysis (SonarQube)
+ 
+🧠 Container Vulnerability Scanning (Trivy)
+ 
+⚙️ GitOps Continuous Delivery (ArgoCD)
+ 
+🧾 Pre-Deployment Manifest Validation (Python Framework)
+ 
+☁️ Cloud-Agnostic Design (AWS-ready, Azure/GCP extendable)
+ 
+ 
+ 
+---
+ 
+🧠 Tech Stack
+ 
+Python • Terraform • AWS • Docker • Kubernetes • Helm • Jenkins • SonarQube • Trivy • ArgoCD
+ 
+ 
+---
+ 
+👨‍💻 Author
+ 
+Aryan Shukla
+DevOps & Cloud Engineer | M.Tech (BITS Pilani)
+📧 LinkedIn
+ 
+ 
+---
+ 
+📜 License
+ 
+Licensed under the MIT License © 2025 Aryan Shukla
+ 
+---
