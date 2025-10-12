@@ -1,31 +1,33 @@
 ---
  
-<div align="center" style="background-color:#0d1117; padding: 30px; border-radius: 10px;">
+Here’s your corrected, GitHub-safe Markdown (copy-paste as-is):
  
-# ⚙️ <span style="color:white;">DevSecOps Kubernetes Deployment Validation Framework</span>
+<p align="center">
  
-A fully automated **<span style="color:white;">DevSecOps CI/CD Framework</span>** built using  
+# ⚙️ **DevSecOps Kubernetes Deployment Validation Framework**
+ 
+A fully automated **DevSecOps CI/CD Framework** built using  
 **Terraform • Jenkins • SonarQube • Trivy • ArgoCD • Python Validation Engine**  
 to ensure secure, scalable, and reliable cloud-native delivery.
  
-[![License: MIT](https://img.shields.io/badge/License-MIT-white.svg)](LICENSE)
-[![Build](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
-[![Security](https://img.shields.io/badge/Security-Checked-blue.svg)]()
+![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)
+![Build](https://img.shields.io/badge/Build-Passing-brightgreen.svg)
+![Security](https://img.shields.io/badge/Security-Checked-blue.svg)
  
-</div>
+</p>
  
 ---
  
-## 🧠 Overview  
+## 🧠 Overview
  
 This project automates the **entire Software Development Lifecycle (SDLC)** — from **Infrastructure as Code (IaC)** and **Continuous Integration** to **Security Scanning**, **Continuous Deployment**, and **Kubernetes Manifest Validation**.  
 It ensures compliance, reliability, and scalability at every stage of your DevSecOps pipeline.  
  
 ---
  
-## 🏗️ Architecture  
+## 🏗️ Architecture
  
-![Architecture Diagram](docs/architecture.png)  
+![Architecture Diagram](docs/architecture.png)
  
 | Layer | Tool | Function |
 |-------|------|-----------|
@@ -38,22 +40,22 @@ It ensures compliance, reliability, and scalability at every stage of your DevSe
  
 ---
  
-## 🧩 Validation Framework  
+## 🧩 Validation Framework
  
 The **Python-based Validation Engine** enforces Kubernetes best practices **before deployment** — stopping insecure or misconfigured workloads.  
  
-### 🔍 Validations Performed:
+### 🔍 Validations Performed
 - ✅ **runAsNonRoot** — Containers never run as root  
 - ✅ **Liveness & Readiness Probes** — Ensures app health checks  
 - ✅ **Resource Limits** — Prevents resource overuse  
 - ✅ **Spec Validation** — Checks containers exist in manifests  
 - ❌ Rejects insecure or incomplete deployments automatically  
  
-### **Run Example:**  
+### **Run Example**
 ```bash
 python validation-framework/app/main.py --manifest k8s/deployment.yaml
  
-Sample Output:
+Sample Output
  
 {
   "doc": 1,
@@ -138,8 +140,8 @@ Licensed under the MIT License © 2025 Aryan Shukla
  
 ---
  
-<div align="center" style="color:gray;">
+<p align="center">
 Made with ❤️ and ☁️ DevSecOps Automation
-</div>
+</p>
 ```
 ---
