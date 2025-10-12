@@ -1,35 +1,19 @@
----
- 
-Here’s your corrected, GitHub-safe Markdown (copy-paste as-is):
- 
 <p align="center">
- 
+
 # ⚙️ **DevSecOps Kubernetes Deployment Validation Framework**
- 
+
 A fully automated **DevSecOps CI/CD Framework** built using  
 **Terraform • Jenkins • SonarQube • Trivy • ArgoCD • Python Validation Engine**  
 to ensure secure, scalable, and reliable cloud-native delivery.
- 
-![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)
-![Build](https://img.shields.io/badge/Build-Passing-brightgreen.svg)
-![Security](https://img.shields.io/badge/Security-Checked-blue.svg)
- 
-</p>
- 
+
+![License: MIT](https://img.shields.io/badge/License-MIT-black.svgbrect automates the **entire Software Development Lifecycle (SDLC)** — from **Infrastructure as Code (IaC)** and **Continuous Integration** to **Security Scanning**, **Continuous Deployment**, and **Kubernetes Manifest Validation**.  
+It ensures compliance, reliability, and scalability at every stage of your DevSecOps pipeline.
+
 ---
- 
-## 🧠 Overview
- 
-This project automates the **entire Software Development Lifecycle (SDLC)** — from **Infrastructure as Code (IaC)** and **Continuous Integration** to **Security Scanning**, **Continuous Deployment**, and **Kubernetes Manifest Validation**.  
-It ensures compliance, reliability, and scalability at every stage of your DevSecOps pipeline.  
- 
----
- 
+
 ## 🏗️ Architecture
- 
-![Architecture Diagram](docs/architecture.png)
- 
-| Layer | Tool | Function |
+
+![Architecture Diagram](docs/architecture.pngion |
 |-------|------|-----------|
 | **Infrastructure as Code (IaC)** | Terraform | Provisions AWS EC2, networking, and Jenkins |
 | **Continuous Integration (CI)** | Jenkins | Builds, tests, scans, and automates pipelines |
@@ -37,24 +21,22 @@ It ensures compliance, reliability, and scalability at every stage of your DevSe
 | **Container Security** | Trivy | Scans Docker images for vulnerabilities |
 | **Continuous Delivery (CD)** | ArgoCD | GitOps-based deployment to K8s clusters |
 | **Validation** | Python Framework | Validates Kubernetes manifests for compliance |
- 
+
 ---
- 
+
 ## 🧩 Validation Framework
- 
-The **Python-based Validation Engine** enforces Kubernetes best practices **before deployment** — stopping insecure or misconfigured workloads.  
- 
+
+The **Python-based Validation Engine** enforces Kubernetes best practices **before deployment** — stopping insecure or misconfigured workloads.
+
 ### 🔍 Validations Performed
 - ✅ **runAsNonRoot** — Containers never run as root  
 - ✅ **Liveness & Readiness Probes** — Ensures app health checks  
 - ✅ **Resource Limits** — Prevents resource overuse  
 - ✅ **Spec Validation** — Checks containers exist in manifests  
 - ❌ Rejects insecure or incomplete deployments automatically  
- 
+
 ### **Run Example**
-```bash
-python validation-framework/app/main.py --manifest k8s/deployment.yaml
- 
+
 Sample Output
  
 {
