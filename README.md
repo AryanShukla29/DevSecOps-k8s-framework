@@ -13,14 +13,42 @@ It ensures compliance, reliability, and scalability at every stage of your DevSe
 
 ## 🏗️ Architecture
 
-![Architecture Diagram](docs/architecture.pngion |
-|-------|------|-----------|
-| **Infrastructure as Code (IaC)** | Terraform | Provisions AWS EC2, networking, and Jenkins |
-| **Continuous Integration (CI)** | Jenkins | Builds, tests, scans, and automates pipelines |
-| **Code Quality** | SonarQube | Performs static code analysis |
-| **Container Security** | Trivy | Scans Docker images for vulnerabilities |
-| **Continuous Delivery (CD)** | ArgoCD | GitOps-based deployment to K8s clusters |
-| **Validation** | Python Framework | Validates Kubernetes manifests for compliance |
+┌───────────────────────────────┐
+                │          Developer            │
+                │  (Pushes Code to GitHub)      │
+                └──────────────┬────────────────┘
+                               │
+                               ▼
+                    ┌────────────────────┐
+                    │   Jenkins Server   │
+                    │ (CI/CD Orchestration)
+                    ├────────────────────┤
+                    │  - Build Docker Image
+                    │  - Run Trivy Scan
+                    │  - SonarQube Analysis
+                    │  - Push Image to Registry
+                    │  - Trigger ArgoCD Deploy
+                    └────────────────────┘
+                               │
+                               ▼
+          ┌───────────────────────────────┐
+          │        ArgoCD Server          │
+          │ (Continuous Deployment)       │
+          └──────────────┬────────────────┘
+                         │
+                         ▼
+         ┌────────────────────────────────────┐
+         │       Kubernetes Cluster           │
+         │  - Validated Deployment via        │
+         │    Custom Python Validation Tool   │
+         │  - Security Policies Enforced      │
+         └────────────────────────────────────┘
+                         │
+                         ▼
+       ┌────────────────────────────┐
+       │   Monitoring & Reporting   │
+       │  (Trivy, SonarQube, Logs)  │
+       └────────────────────────────┘
 
 ---
 
